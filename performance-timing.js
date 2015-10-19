@@ -27,6 +27,7 @@
         //程序配置参数
         options: {
             url: "", //后端收集数据的URL（必须）
+            rate: 0.1, //抽样比例（必须，默认为10%抽中）
             data: { //额外需要发送的数据（非必须）
                 "ext_domain": document.domain,
                 "ext_path": window.location.pathname
@@ -41,7 +42,7 @@
 
         //检查是否支持navigation timing api
         check: function () {
-            return window.performance && window.performance.timing;
+            return window.performance && window.performance.timing && Math.random() <= _P.options.rate;
         },
 
         //程序的处理（包括数据收集、发送动作）
@@ -64,13 +65,12 @@
                 "t_request": timing.responseStart - timing.requestStart, //*服务器响应时间
                 "t_response": timing.responseEnd - timing.responseStart, //*网页下载时间
                 "t_paint": _P.getFirstPaintTime() - startTime, //*首次渲染时间
-                "t_interactive": timing.domInteractive - timing.domLoading, //可交互时间（阶段）
                 "t_dom": timing.domContentLoadedEventStart - timing.domLoading, //dom ready时间（阶段）
                 "t_domready": timing.domContentLoadedEventStart - startTime, //*dom ready时间（总和）
                 "t_load": timing.loadEventStart - timing.domLoading, //onload时间（阶段）
                 "t_onload": timing.loadEventStart - startTime, //*onload时间（总和）
                 "t_white": timing.responseStart - startTime, //*白屏时间
-                "t_all": timing.loadEventEnd - startTime //所有过程的时间之和
+                "t_all": timing.loadEventEnd - startTime //整个过程的时间之和
             };
             for (var key in data) {
                 //删除无用数据，避免干扰(小于等于0或大于两分钟)
@@ -102,10 +102,10 @@
 
         //程序主入口
         start: function (options) {
-            //是否支持API
+            //合并参数
+            $.extend(_P.options, options);
+            //支持API并且被抽样抽中
             if (_P.check()) {
-                //合并参数
-                $.extend(_P.options, options);
                 //是否已经形成数据（页面加载完成之后）
                 if (window.performance.timing.loadEventEnd > 0) {
                     _P.setup();

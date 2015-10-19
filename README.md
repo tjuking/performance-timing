@@ -15,6 +15,7 @@
     //支持 AMD 和 CMD，下面代码使用的是全局变量的方式
     Performance.start({
         url: "http://www.xxx.com/a.gif", //后端收集数据的URL
+        rate: 0.2, //抽样比例
         data: {
             //额外需要记录的数据
         }
