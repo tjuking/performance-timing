@@ -22,7 +22,7 @@
     "use strict";
 
     //封装的Performance对象
-    var Perf = {
+    var _P = {
 
         //程序配置参数
         options: {
@@ -46,34 +46,40 @@
 
         //程序的处理（包括数据收集、发送动作）
         setup: function () {
-            Perf.timing = window.performance.timing;
-            Perf.setData(Perf.timing);
-            Perf.send(Perf.options.url, Perf.data);
+            _P.timing = window.performance.timing;
+            //数据正常时才发送
+            if(_P.setData(_P.timing)){
+                _P.send(_P.options.url, _P.data);
+            }
         },
 
-        //设置数据
+        //设置需要发送给后端的数据
         setData: function (timing) {
+            var startTime = timing.navigationStart || timing.fetchStart;
             var data = {
-                "t_unload": timing.unloadEnd - timing.unloadStart, //上个文档的卸载时间
-                "t_redirect": timing.redirectEnd - timing.redirectStart, //重定向时间
-                "t_dns": timing.domainLookupEnd - timing.domainLookupStart, //DNS查询时间
-                "t_tcp": timing.connectEnd - timing.connectStart, //tcp连接时间
-                "t_request": timing.responseStart - timing.requestStart, //请求时间
-                "t_response": timing.responseEnd - timing.responseStart, //文档下载时间
-                "t_interactive": timing.domInteractive - timing.domLoading, //用户可操作时间
-                "t_dom": timing.domContentLoaded - timing.domLoading, //dom ready时间
-                "t_load": timing.loadEventStart - timing.domLoading, //onload时间
-                "t_white": timing.responseStart - timing.fetchStart, //白屏时间
-                "t_all": timing.loadEventEnd - timing.navigationStart //所有过程的时间之和
+                "t_unload": timing.unloadEventEnd - timing.unloadEventStart, //上个文档的卸载时间
+                "t_redirect": timing.redirectEnd - timing.redirectStart, //*重定向时间
+                "t_dns": timing.domainLookupEnd - timing.domainLookupStart, //*DNS查询时间
+                "t_tcp": timing.connectEnd - timing.connectStart, //*服务器连接时间
+                "t_request": timing.responseStart - timing.requestStart, //*服务器响应时间
+                "t_response": timing.responseEnd - timing.responseStart, //*网页下载时间
+                "t_interactive": timing.domInteractive - timing.domLoading, //可交互时间（阶段）
+                "t_dom": timing.domContentLoadedEventStart - timing.domLoading, //dom ready时间（阶段）
+                "t_domready": timing.domContentLoadedEventStart - startTime, //*dom ready时间（总和）
+                "t_load": timing.loadEventStart - timing.domLoading, //onload时间（阶段）
+                "t_onload": timing.loadEventStart - startTime, //*onload时间（总和）
+                "t_white": timing.responseStart - startTime, //*白屏时间
+                "t_all": timing.loadEventEnd - startTime //所有过程的时间之和
             };
-            //删除无用数据，避免干扰
             for (var key in data) {
-                if (data[key] <= 0) {
+                //删除无用数据，避免干扰(小于等于0或大于两分钟)
+                if (data[key] <= 0 || data[key] >= 120000) {
                     delete data[key];
                 }
             }
             //合并程序外传入的数据
-            $.extend(Perf.data, data, Perf.options.data);
+            $.extend(_P.data, data, _P.options.data);
+            return startTime > 0;
         },
 
         //发送数据到后端
@@ -85,17 +91,17 @@
         //程序主入口
         start: function (options) {
             //是否支持API
-            if (Perf.check()) {
+            if (_P.check()) {
                 //合并参数
-                $.extend(Perf.options, options);
-                //是否已完成页面加载
+                $.extend(_P.options, options);
+                //是否已经形成数据（页面加载完成之后）
                 if (window.performance.timing.loadEventEnd > 0) {
-                    Perf.setup();
+                    _P.setup();
                 } else {
                     window.addEventListener("load", function () {
                         //不能影响最后的时间计算
                         window.setTimeout(function () {
-                            Perf.setup();
+                            _P.setup();
                         }, 0);
                     }, false);
                 }
@@ -104,5 +110,5 @@
 
     };
 
-    return Perf;
+    return _P;
 });
