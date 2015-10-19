@@ -29,8 +29,8 @@
             url: "", //后端收集数据的URL（必须）
             rate: 0.1, //抽样比例（必须，默认为10%抽中）
             data: { //额外需要发送的数据（非必须）
-                "ext_domain": document.domain,
-                "ext_path": window.location.pathname
+                "ext_domain": encodeURIComponent(document.domain),
+                "ext_path": encodeURIComponent(window.location.pathname.toLowerCase().replace(/\//g, "_"))
             }
         },
 
@@ -40,9 +40,9 @@
         //用于存储解析后的数据
         data: {},
 
-        //检查是否支持navigation timing api
+        //检查是否支持navigation timing api，并且包含在抽样中
         check: function () {
-            return window.performance && window.performance.timing && Math.random() <= _P.options.rate;
+            return window.performance && window.performance.timing && Math.random() < _P.options.rate;
         },
 
         //程序的处理（包括数据收集、发送动作）
