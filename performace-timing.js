@@ -1,5 +1,5 @@
 /*
- * performance-timing.js 0.1
+ * performance-timing.js 0.2
  * https://github.com/tjuking/performance-timing
  */
 
@@ -26,11 +26,11 @@
 
         //程序配置参数
         options: {
-            url: "", //收集数据的URL，必须
-            data: {
+            url: "", //后端收集数据的URL（必须）
+            data: { //额外需要发送的数据（非必须）
                 "ext_domain": document.domain,
                 "ext_path": window.location.pathname
-            } //额外需要发送的数据，非必须
+            }
         },
 
         //原始timing数据
@@ -48,7 +48,7 @@
         setup: function () {
             _P.timing = window.performance.timing;
             //数据正常时才发送
-            if(_P.setData(_P.timing)){
+            if (_P.setData(_P.timing)) {
                 _P.send(_P.options.url, _P.data);
             }
         },
@@ -63,6 +63,7 @@
                 "t_tcp": timing.connectEnd - timing.connectStart, //*服务器连接时间
                 "t_request": timing.responseStart - timing.requestStart, //*服务器响应时间
                 "t_response": timing.responseEnd - timing.responseStart, //*网页下载时间
+                "t_paint": _P.getFirstPaintTime() - startTime, //*首次渲染时间
                 "t_interactive": timing.domInteractive - timing.domLoading, //可交互时间（阶段）
                 "t_dom": timing.domContentLoadedEventStart - timing.domLoading, //dom ready时间（阶段）
                 "t_domready": timing.domContentLoadedEventStart - startTime, //*dom ready时间（总和）
@@ -82,6 +83,17 @@
             return startTime > 0;
         },
 
+        //获取首次渲染时间
+        getFirstPaintTime: function () {
+            var firstPaintTime = 0;
+            if (window.chrome && typeof window.chrome.loadTimes === "function") { //Chrome
+                firstPaintTime = window.chrome.loadTimes().firstPaintTime * 1000;
+            } else if (typeof _P.timing.msFirstPaint === "number") { //IE
+                firstPaintTime = _P.timing.msFirstPaint;
+            }
+            return firstPaintTime;
+        },
+
         //发送数据到后端
         send: function (url, data) {
             var img = new Image();
@@ -98,12 +110,12 @@
                 if (window.performance.timing.loadEventEnd > 0) {
                     _P.setup();
                 } else {
-                    window.addEventListener("load", function () {
+                    $(window).on("load", function () {
                         //不能影响最后的时间计算
                         window.setTimeout(function () {
                             _P.setup();
                         }, 0);
-                    }, false);
+                    });
                 }
             }
         }
