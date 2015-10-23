@@ -79,7 +79,7 @@
                 }
             }
             //合并程序外传入的数据
-            $.extend(_P.data, data, _P.options.data);
+            $.extend(true, _P.data, data, _P.options.data);
             return startTime > 0;
         },
 
@@ -91,7 +91,7 @@
             } else if (typeof _P.timing.msFirstPaint === "number") { //IE
                 firstPaintTime = _P.timing.msFirstPaint;
             }
-            return firstPaintTime;
+            return Math.round(firstPaintTime);
         },
 
         //发送数据到后端
@@ -103,7 +103,7 @@
         //程序主入口
         start: function (options) {
             //合并参数
-            $.extend(_P.options, options);
+            $.extend(true, _P.options, options);
             //支持API并且被抽样抽中
             if (_P.check()) {
                 //是否已经形成数据（页面加载完成之后）
