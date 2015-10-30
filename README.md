@@ -8,7 +8,7 @@
 
 ### 依赖
 
-目前依赖[jQuery](http://jquery.com/)，如果不希望依赖jQuery可以自己去实现函数$.param和$.extend
+目前依赖[jQuery](http://jquery.com/)，如果不希望依赖jQuery可以自己去实现函数`$.param`和`$.extend`
 
 ### 使用示例
 
