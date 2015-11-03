@@ -12,8 +12,9 @@
 
 ### 优势
 
-* 浏览器原生支持，数据准确性高
+* 浏览器原生支持，准确性高
 * 能够获取到更多的数据，例如DNS解析时间、重定向时间等
+* 支持页面首次渲染时间的采集
 * 代码量少（百行左右）
 * 可定制化程度高
 * 支持抽样
@@ -26,7 +27,7 @@
     Performance.start({
         url: "http://www.xxx.com/a.gif", //后端收集数据的URL，必填
         rate: 0.2, //抽样比例，默认是10%抽样
-        data: { //额外需要记录的数据，可以不需要
+        data: { //额外需要记录的数据，非必填
             ext_domain: "www.xxx.com", //域名，默认是document.domain
             ext_path: "_wap_index" //页面，默认是encodeURIComponent(location.pathname.toLowerCase().replace(/\//g, "_"));
         }
