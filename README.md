@@ -1,6 +1,6 @@
 # performance-timing
 
-利用HTML5中的[navigation timing API](http://www.w3.org/TR/navigation-timing/)进行前端性能数据采集
+performance-timing.js利用HTML5中的[navigation timing API](http://www.w3.org/TR/navigation-timing/)进行前端性能数据采集，是性能监控平台搭建的利器
 
 ### 浏览器兼容性
 
